@@ -1,0 +1,130 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<div class="container mt-5">
+
+    <h2 class="text-center mb-4">Monthly Budget</h2>
+
+    <!-- Budget Form -->
+    <div class="card shadow p-4 mb-4">
+
+        <form action="/budget" method="POST">
+
+            <div class="mb-3">
+                <label class="form-label">Select Month</label>
+
+                <input
+                    type="month"
+                    class="form-control"
+                    id="month"
+                    name="month"
+                    value="<%= month %>"
+                    required
+                >
+
+            </div>
+
+            <div class="mb-3">
+
+                <label class="form-label">Budget Amount (₹)</label>
+
+                <input
+                    type="number"
+                    class="form-control"
+                    id="limit"
+                    name="limit"
+                    placeholder="Enter Budget"
+                    value="<%= limit !== null ? limit : '' %>"
+                    min="0"
+                    required
+                >
+
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Save Budget
+            </button>
+
+        </form>
+
+    </div>
+
+    <!-- Budget Details -->
+
+    <div class="card shadow p-4">
+
+        <h4>Budget Summary</h4>
+
+        <% if(limit === null){ %>
+
+            <div class="alert alert-warning mt-3">
+                No Budget Added Yet.
+            </div>
+
+        <% } else { %>
+
+            <table class="table table-bordered mt-3">
+
+                <tr>
+                    <th>Month</th>
+                    <td><%= month %></td>
+                </tr>
+
+                <tr>
+                    <th>Budget</th>
+                    <td>₹ <%= limit.toFixed(2) %></td>
+                </tr>
+
+                <tr>
+                    <th>Spent</th>
+                    <td>₹ <%= spent.toFixed(2) %></td>
+                </tr>
+
+                <tr>
+                    <th>Remaining</th>
+
+                    <% if(remaining >= 0){ %>
+
+                        <td class="text-success">
+                            ₹ <%= remaining.toFixed(2) %>
+                        </td>
+
+                    <% } else { %>
+
+                        <td class="text-danger">
+                            ₹ <%= remaining.toFixed(2) %>
+                        </td>
+
+                    <% } %>
+
+                </tr>
+
+            </table>
+
+            <!-- Progress Bar -->
+
+            <%
+                const percentage = limit > 0 ? (spent / limit) * 100 : 0;
+            %>
+
+            <div class="progress mt-3" style="height:25px;">
+
+                <div
+                    class="progress-bar bg-success"
+                    role="progressbar"
+                    style="width:<%= Math.min(percentage,100) %>%"
+                >
+
+                    <%= percentage.toFixed(0) %>%
+
+                </div>
+
+            </div>
+
+        <% } %>
+
+    </div>
+
+</div>
+
+<%- include('../partials/footer') %>
