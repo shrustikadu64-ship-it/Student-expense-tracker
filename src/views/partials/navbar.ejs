@@ -1,6 +1,43 @@
-<nav style="background:#1f2937;padding:15px;">
-    <a href="/dashboard" style="color:white;margin-right:20px;">Dashboard</a>
-    <a href="/expenses" style="color:white;margin-right:20px;">Expenses</a>
-    <a href="/budget" style="color:white;margin-right:20px;">Budget</a>
-    <a href="/logout" style="color:white;">Logout</a>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
+    <div class="container">
+
+        <a class="navbar-brand fw-bold fs-3" href="/dashboard">
+            💙 PocketWise
+        </a>
+
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav">
+
+            <span class="navbar-toggler-icon"></span>
+
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+
+            <ul class="navbar-nav ms-auto">
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/dashboard">Dashboard</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/expenses">Expenses</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/budget">Budget</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-warning" href="/logout">Logout</a>
+                </li>
+
+            </ul>
+
+        </div>
+
+    </div>
 </nav>
