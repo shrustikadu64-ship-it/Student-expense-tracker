@@ -87,14 +87,31 @@ http://localhost:5000
 
 ## 📸 Screenshots
 
-Add screenshots of:
-- Login Page
-- Register Page
-- Dashboard
-- Expense Page
-- Budget Page
+<table>
+<tr>
+<td align="center">
+<b>🔐 Login Page</b><br><br>
+<img src="screenshots/login.PNG" width="450">
+</td>
 
----
+<td align="center">
+<b>📊 Dashboard</b><br><br>
+<img src="screenshots/dashboard.PNG" width="450">
+</td>
+</tr>
+
+<tr>
+<td align="center">
+<b>💸 Expenses</b><br><br>
+<img src="screenshots/expenses.PNG" width="450">
+</td>
+
+<td align="center">
+<b>💰 Budget</b><br><br>
+<img src="screenshots/budget.PNG" width="450">
+</td>
+</tr>
+</table>
 
 ## 👩‍💻 Author
 
