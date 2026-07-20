@@ -1,73 +1,76 @@
 <%- include('../partials/header') %>
 <%- include('../partials/navbar') %>
 
-<div class="container mt-5">
+<div class="container py-5">
 
-    <h2 class="mb-4">Monthly Budget</h2>
+    <h2 class="mb-4 text-primary">
+        💰 Monthly Budget
+    </h2>
 
-    <div class="card shadow mb-4">
+    <%- include('../partials/flash') %>
+
+    <div class="card shadow mb-5">
+
         <div class="card-body">
 
             <form action="/budget" method="POST">
 
                 <div class="mb-3">
-                    <label class="form-label">Month</label>
+
+                    <label class="form-label">
+                        Month
+                    </label>
 
                     <input
                         type="month"
-                        class="form-control"
                         name="month"
                         value="<%= month %>"
-                        required
-                    >
+                        class="form-control"
+                        required>
+
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Budget Amount (₹)</label>
+
+                    <label class="form-label">
+                        Budget Amount
+                    </label>
 
                     <input
                         type="number"
-                        class="form-control"
+                        step="0.01"
                         name="limit"
-                        value="<%= limit || '' %>"
-                        min="0"
-                        required
-                    >
+                        value="<%= limit %>"
+                        class="form-control"
+                        required>
+
                 </div>
 
                 <button class="btn btn-primary">
+
                     Save Budget
+
                 </button>
 
             </form>
 
         </div>
+
     </div>
 
     <div class="card shadow">
 
-        <div class="card-header">
-            <h4>Budget Summary</h4>
-        </div>
-
         <div class="card-body">
 
-            <table class="table table-bordered">
+            <h4 class="mb-3">
+                Budget Summary
+            </h4>
 
-                <tr>
-                    <th>Month</th>
-                    <td><%= month %></td>
-                </tr>
+            <table class="table">
 
                 <tr>
                     <th>Budget</th>
-                    <td>
-                        <% if(limit !== null){ %>
-                            ₹ <%= limit.toFixed(2) %>
-                        <% } else { %>
-                            Not Set
-                        <% } %>
-                    </td>
+                    <td>₹ <%= limit.toFixed(2) %></td>
                 </tr>
 
                 <tr>
@@ -77,13 +80,13 @@
 
                 <tr>
                     <th>Remaining</th>
-                    <td>
-                        <% if(remaining !== null){ %>
-                            ₹ <%= remaining.toFixed(2) %>
-                        <% } else { %>
-                            Not Set
-                        <% } %>
+
+                    <td class="<%= remaining >= 0 ? 'text-success' : 'text-danger' %>">
+
+                        ₹ <%= remaining.toFixed(2) %>
+
                     </td>
+
                 </tr>
 
             </table>

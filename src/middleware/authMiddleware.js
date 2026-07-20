@@ -1,16 +1,10 @@
-function isLoggedIn(req, res, next) {
-  if (req.session && req.session.userId) {
-    return next();
+const protect = (req, res, next) => {
+  if (!req.session.userId) {
+    req.flash("error", "Please login first.");
+    return res.redirect("/login");
   }
-  req.flash('error', 'Please log in to continue.');
-  return res.redirect('/login');
-}
 
-function isLoggedOut(req, res, next) {
-  if (req.session && req.session.userId) {
-    return res.redirect('/dashboard');
-  }
-  return next();
-}
+  next();
+};
 
-module.exports = { isLoggedIn, isLoggedOut };
+module.exports = protect;

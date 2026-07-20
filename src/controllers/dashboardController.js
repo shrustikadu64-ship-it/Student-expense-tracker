@@ -1,78 +1,47 @@
 const Expense = require("../models/Expense");
 const Budget = require("../models/Budget");
-const { currentMonth } = require("./budgetController");
 
-async function index(req, res, next) {
+const index = async (req, res) => {
   try {
-    const month = currentMonth();
 
-    const [year, mon] = month.split("-").map(Number);
+    const userId = req.session.userId;
 
-    const start = new Date(year, mon - 1, 1);
-    const end = new Date(year, mon, 1);
+    const expenses = await Expense.find({ user: userId });
 
-    // Expenses of current month
-    const monthExpenses = await Expense.find({
-      user: req.session.userId,
-      date: {
-        $gte: start,
-        $lt: end,
-      },
-    });
-
-    const spent = monthExpenses.reduce(
+    const totalExpenses = expenses.reduce(
       (sum, expense) => sum + expense.amount,
       0
     );
 
-    // Budget
+    const currentMonth = new Date().toISOString().slice(0, 7);
+
     const budget = await Budget.findOne({
-      user: req.session.userId,
-      month,
+      user: userId,
+      month: currentMonth,
     });
 
-    const limit = budget ? budget.limit : null;
+    const budgetAmount = budget ? budget.limit : 0;
 
-    const remaining =
-      limit !== null
-        ? limit - spent
-        : null;
-
-    // Category Breakdown
-    const categoryBreakdown = {};
-
-    monthExpenses.forEach((expense) => {
-      if (!categoryBreakdown[expense.category]) {
-        categoryBreakdown[expense.category] = 0;
-      }
-
-      categoryBreakdown[expense.category] += expense.amount;
-    });
-
-    // Recent Expenses
-    const recentExpenses = await Expense.find({
-      user: req.session.userId,
-    })
-      .sort({ date: -1 })
-      .limit(5);
+    const remaining = budgetAmount - totalExpenses;
 
     res.render("dashboard/index", {
       title: "Dashboard",
-
-      month,
-
-      spent,
-      limit,
+      month: currentMonth,
+      spent: totalExpenses,
+      limit: budgetAmount,
       remaining,
-
-      recentExpenses,
-      categoryBreakdown,
+      recentExpenses: expenses.slice(-5).reverse(),
+      categoryBreakdown: {}
     });
 
   } catch (err) {
-    next(err);
+
+    console.log(err);
+
+    res.redirect("/login");
+
   }
-}
+};
 
 module.exports = {
   index,

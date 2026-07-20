@@ -1,100 +1,92 @@
-const bcrypt = require('bcryptjs');
-const User = require('../models/User');
+const bcrypt = require("bcryptjs");
+const User = require("../models/User");
 
-const SALT_ROUNDS = 10;
+// Show Register Page
+const getRegister = (req, res) => {
+  res.render("auth/register", {
+    title: "Register",
+  });
+};
 
-// GET /register
-function getRegister(req, res) {
-  res.render('auth/register', { title: 'Register' });
-}
-
-// POST /register
-async function postRegister(req, res, next) {
+// Register User
+const register = async (req, res) => {
   try {
-    const { name, email, password, confirmPassword } = req.body;
+    const { name, email, password } = req.body;
 
-    if (!name || !email || !password || !confirmPassword) {
-      req.flash('error', 'All fields are required.');
-      return res.redirect('/register');
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      req.flash("error", "Email already exists.");
+      return res.redirect("/register");
     }
 
-    if (password !== confirmPassword) {
-      req.flash('error', 'Passwords do not match.');
-      return res.redirect('/register');
-    }
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    if (password.length < 6) {
-      req.flash('error', 'Password must be at least 6 characters.');
-      return res.redirect('/register');
-    }
-
-    const existing = await User.findOne({ email: email.toLowerCase().trim() });
-    if (existing) {
-      req.flash('error', 'An account with that email already exists.');
-      return res.redirect('/register');
-    }
-
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-
-    const user = await User.create({
-      name: name.trim(),
-      email: email.toLowerCase().trim(),
+    await User.create({
+      name,
+      email,
       password: hashedPassword,
     });
 
-    req.session.userId = user._id;
-    req.session.userName = user.name;
+    req.flash("success", "Registration successful. Please login.");
+    res.redirect("/login");
 
-    req.flash('success', `Welcome, ${user.name}!`);
-    res.redirect('/dashboard');
   } catch (err) {
-    next(err);
+    console.log(err);
+    res.redirect("/register");
   }
-}
+};
 
-// GET /login
-function getLogin(req, res) {
-  res.render('auth/login', { title: 'Login' });
-}
+// Show Login Page
+const getLogin = (req, res) => {
+  res.render("auth/login", {
+    title: "Login",
+  });
+};
 
-// POST /login
-async function postLogin(req, res, next) {
+// Login User
+const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      req.flash('error', 'Email and password are required.');
-      return res.redirect('/login');
-    }
+    const user = await User.findOne({ email });
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user) {
-      req.flash('error', 'Invalid email or password.');
-      return res.redirect('/login');
+      req.flash("error", "Invalid Email or Password.");
+      return res.redirect("/login");
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) {
-      req.flash('error', 'Invalid email or password.');
-      return res.redirect('/login');
+      req.flash("error", "Invalid Email or Password.");
+      return res.redirect("/login");
     }
 
     req.session.userId = user._id;
     req.session.userName = user.name;
 
-    req.flash('success', `Welcome back, ${user.name}!`);
-    res.redirect('/dashboard');
+    req.flash("success", "Welcome Back!");
+
+    res.redirect("/dashboard");
+
   } catch (err) {
-    next(err);
+    console.log(err);
+    res.redirect("/login");
   }
-}
+};
 
-// GET /logout
-function logout(req, res, next) {
-  req.session.destroy((err) => {
-    if (err) return next(err);
-    res.redirect('/login');
+// Logout
+const logout = (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/login");
   });
-}
+};
 
-module.exports = { getRegister, postRegister, getLogin, postLogin, logout };
+module.exports = {
+  getRegister,
+  register,
+  getLogin,
+  login,
+  logout,
+};

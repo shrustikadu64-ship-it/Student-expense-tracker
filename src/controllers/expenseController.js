@@ -1,143 +1,118 @@
-const Expense = require('../models/Expense');
+const Expense = require("../models/Expense");
 
-// GET /expenses
-async function index(req, res, next) {
+const categories = [
+  "Food",
+  "Transport",
+  "Shopping",
+  "Bills",
+  "Entertainment",
+  "Health",
+  "Education",
+  "Other",
+];
+
+// Show All Expenses
+const index = async (req, res) => {
   try {
-    const { category, month } = req.query;
-    const filter = { user: req.session.userId };
+    const expenses = await Expense.find({
+      user: req.session.userId,
+    }).sort({ date: -1 });
 
-    if (category) {
-      filter.category = category;
-    }
+    const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
 
-    if (month) {
-      const [year, mon] = month.split('-').map(Number);
-      const start = new Date(year, mon - 1, 1);
-      const end = new Date(year, mon, 1);
-      filter.date = { $gte: start, $lt: end };
-    }
-
-    const expenses = await Expense.find(filter).sort({ date: -1 });
-    const total = expenses.reduce((sum, e) => sum + e.amount, 0);
-
-    res.render('expenses/index', {
-      title: 'My Expenses',
+    res.render("expenses/index", {
+      title: "Expenses",
       expenses,
       total,
-      categories: Expense.CATEGORIES,
-      selectedCategory: category || '',
-      selectedMonth: month || '',
+      categories,
+      selectedCategory: "",
+      selectedMonth: "",
     });
+
   } catch (err) {
-    next(err);
+    console.log(err);
+    res.redirect("/dashboard");
   }
-}
+};
 
-// GET /expenses/new
-function newForm(req, res) {
-  res.render('expenses/new', {
-    title: 'Add Expense',
-    categories: Expense.CATEGORIES,
+// Show Add Expense Page
+const getNewExpense = (req, res) => {
+  res.render("expenses/new", {
+    title: "Add Expense",
+    categories,
   });
-}
+};
 
-// POST /expenses
-async function create(req, res, next) {
+// Save Expense
+const createExpense = async (req, res) => {
   try {
-    const { title, amount, category, date, notes } = req.body;
 
-    if (!title || !amount || !category || !date) {
-      req.flash('error', 'Title, amount, category and date are required.');
-      return res.redirect('/expenses/new');
-    }
+    const { title, amount, category, date, notes } = req.body;
 
     await Expense.create({
-      title: title.trim(),
-      amount: Number(amount),
+      user: req.session.userId,
+      title,
+      amount,
       category,
-      date: new Date(date),
-      notes: (notes || '').trim(),
-      user: req.session.userId,
+      date,
+      notes,
     });
 
-    req.flash('success', 'Expense added successfully.');
-    res.redirect('/expenses');
+    req.flash("success", "Expense Added Successfully");
+
+    res.redirect("/expenses");
+
   } catch (err) {
-    next(err);
+    console.log(err);
+    res.redirect("/expenses/new");
   }
-}
+};
 
-// GET /expenses/:id/edit
-async function editForm(req, res, next) {
-  try {
-    const expense = await Expense.findOne({
-      _id: req.params.id,
-      user: req.session.userId,
-    });
+// Show Edit Page
+const getEditExpense = async (req, res) => {
 
-    if (!expense) {
-      req.flash('error', 'Expense not found.');
-      return res.redirect('/expenses');
-    }
+  const expense = await Expense.findById(req.params.id);
 
-    res.render('expenses/edit', {
-      title: 'Edit Expense',
-      expense,
-      categories: Expense.CATEGORIES,
-    });
-  } catch (err) {
-    next(err);
-  }
-}
+  res.render("expenses/edit", {
+    title: "Edit Expense",
+    expense,
+    categories,
+  });
+};
 
-// PUT /expenses/:id
-async function update(req, res, next) {
-  try {
-    const { title, amount, category, date, notes } = req.body;
+// Update Expense
+const updateExpense = async (req, res) => {
 
-    const expense = await Expense.findOne({
-      _id: req.params.id,
-      user: req.session.userId,
-    });
+  const { title, amount, category, date, notes } = req.body;
 
-    if (!expense) {
-      req.flash('error', 'Expense not found.');
-      return res.redirect('/expenses');
-    }
+  await Expense.findByIdAndUpdate(req.params.id, {
+    title,
+    amount,
+    category,
+    date,
+    notes,
+  });
 
-    expense.title    = title.trim();
-    expense.amount   = Number(amount);
-    expense.category = category;
-    expense.date     = new Date(date);
-    expense.notes    = (notes || '').trim();
+  req.flash("success", "Expense Updated");
 
-    await expense.save();
+  res.redirect("/expenses");
+};
 
-    req.flash('success', 'Expense updated successfully.');
-    res.redirect('/expenses');
-  } catch (err) {
-    next(err);
-  }
-}
+// Delete Expense
+const deleteExpense = async (req, res) => {
 
-// DELETE /expenses/:id
-async function remove(req, res, next) {
-  try {
-    const expense = await Expense.findOneAndDelete({
-      _id: req.params.id,
-      user: req.session.userId,
-    });
+  await Expense.findByIdAndDelete(req.params.id);
 
-    if (!expense) {
-      req.flash('error', 'Expense not found.');
-    } else {
-      req.flash('success', 'Expense deleted.');
-    }
+  req.flash("success", "Expense Deleted");
 
-    res.redirect('/expenses');
-  } catch (err) {
-    next(err);
-  }
-}
+  res.redirect("/expenses");
+};
 
-module.exports = { index, newForm, create, editForm, update, remove };
+module.exports = {
+  index,
+  getNewExpense,
+  createExpense,
+  getEditExpense,
+  updateExpense,
+  deleteExpense,
+};
